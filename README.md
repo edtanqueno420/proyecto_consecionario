@@ -97,3 +97,81 @@ Nest is an MIT-licensed open source project. It can grow thanks to the sponsors 
 
 Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
 # proyecto_consecionario
+
+
+erDiagram
+    ROLES {
+        uuid id PK
+        string nombre
+        text descripcion
+    }
+    USUARIOS {
+        uuid id PK
+        string nombre
+        string email
+        string password
+        uuid rol_id FK
+        timestamp created_at
+    }
+    MARCAS {
+        uuid id PK
+        string nombre
+        string pais
+    }
+    VEHICULOS {
+        uuid id PK
+        string vin
+        string modelo
+        int anio
+        string tipo
+        numeric precio
+        boolean disponible
+        uuid marca_id FK
+        timestamp created_at
+    }
+    CLIENTES {
+        uuid id PK
+        string nombre
+        string email
+        string telefono
+        text direccion
+    }
+    EMPLEADOS {
+        uuid id PK
+        string nombre
+        string email
+        string puesto
+    }
+    VENTAS {
+        uuid id PK
+        uuid cliente_id FK
+        uuid vehiculo_id FK
+        uuid empleado_id FK
+        numeric precio_final
+        date fecha_venta
+        string estado
+    }
+    INVENTARIO {
+        uuid id PK
+        uuid vehiculo_id FK
+        string ubicacion
+        int stock
+        string estado
+    }
+    RESERVAS {
+        uuid id PK
+        uuid cliente_id FK
+        uuid vehiculo_id FK
+        timestamp fecha_hora
+        string sucursal
+        string estado
+    }
+
+    ROLES ||--o{ USUARIOS : tiene
+    MARCAS ||--o{ VEHICULOS : fabrica
+    VEHICULOS ||--o{ INVENTARIO : "esta en"
+    CLIENTES ||--o{ VENTAS : "hace"
+    VEHICULOS ||--o{ VENTAS : "vendido en"
+    CLIENTES ||--o{ RESERVAS : "reserva"
+    VEHICULOS ||--o{ RESERVAS : "es reservado"
+    EMPLEADOS ||--o{ VENTAS : "realiza"
