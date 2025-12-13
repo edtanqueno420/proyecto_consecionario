@@ -1,4 +1,18 @@
-import { Controller } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, ParseIntPipe } from '@nestjs/common';
+import { UsuariosService } from './usuarios.service';
+import { CreateUsuarioDto } from './dto/create-usuarios.dto';
 
 @Controller('usuarios')
-export class UsuariosController {}
+export class UsuariosController {
+  constructor(private readonly usuariosService: UsuariosService) {}
+
+  @Post()
+  create(@Body() createUsuarioDto: CreateUsuarioDto) {
+    return this.usuariosService.create(createUsuarioDto);
+  }
+
+  @Get(':id')
+  findOne(@Param('id', ParseIntPipe) id: number) {
+    return this.usuariosService.findOne(id);
+  }
+}
