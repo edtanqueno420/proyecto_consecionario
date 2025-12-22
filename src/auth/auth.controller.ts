@@ -1,20 +1,20 @@
 import { Controller, Post, Body, UnauthorizedException } from '@nestjs/common';
 import { AuthService } from './auth.service';
+import { LoginDto } from './dto/login.dto';
+import { RegisterDto } from './dto/register.dto';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private authService: AuthService) {}
+  constructor(private readonly authService: AuthService) {}
 
   @Post('login')
-  async login(@Body() body) {
-    // 1. Validar credenciales
-    const user = await this.authService.validateUser(body.email, body.password);
-    
-    if (!user) {
-      throw new UnauthorizedException('Credenciales inválidas'); // <--- Esto cumple el criterio Negativo (401)
-    }
-
-    // 2. Si todo bien, devolver token
-    return this.authService.login(user);
+  async login(@Body() dto: LoginDto) {
+    return this.authService.validateUserAndLogin(dto.email, dto.password);
   }
+
+  @Post('register')
+  register(@Body() dto: RegisterDto) {
+    return this.authService.register(dto);
+  }
+
 }

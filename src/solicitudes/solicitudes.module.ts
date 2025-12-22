@@ -1,9 +1,14 @@
 import { Module } from '@nestjs/common';
-import { SolicitudesController } from './solicitudes.controller';
+import { MongooseModule } from '@nestjs/mongoose';
+import { Solicitud, SolicitudSchema } from './schemas/solicitud.schema';
 import { SolicitudesService } from './solicitudes.service';
+import { SolicitudesController } from './solicitudes.controller';
 
 @Module({
+  imports: [
+    MongooseModule.forFeature([{ name: Solicitud.name, schema: SolicitudSchema }]),
+  ],
+  providers: [SolicitudesService],
   controllers: [SolicitudesController],
-  providers: [SolicitudesService]
 })
 export class SolicitudesModule {}

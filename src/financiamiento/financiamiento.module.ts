@@ -1,9 +1,12 @@
 import { Module } from '@nestjs/common';
-import { FinanciamientoController } from './financiamiento.controller';
-import { FinanciamientoService } from './financiamiento.service';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { FinanciamientosService } from './financiamiento.service';
+import { FinanciamientosController } from './financiamiento.controller';
+import { Financiamiento } from './financiamiento.entity';
 
 @Module({
-  controllers: [FinanciamientoController],
-  providers: [FinanciamientoService]
+  imports: [TypeOrmModule.forFeature([Financiamiento])],
+  controllers: [FinanciamientosController],
+  providers: [FinanciamientosService],
 })
-export class FinanciamientoModule {}
+export class FinanciamientosModule {}

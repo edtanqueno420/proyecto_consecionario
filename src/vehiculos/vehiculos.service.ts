@@ -1,69 +1,81 @@
-// src/modules/vehiculos/vehiculos.service.ts
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Vehiculo } from './vehiculos.entity';
+import { Vehiculo } from './vehiculo.entity';
 import { CreateVehiculoDto } from './dto/create-vehiculo.dto';
 import { UpdateVehiculoDto } from './dto/update-vehiculo.dto';
+import { Version } from '../versiones/version.entity';
 
 @Injectable()
 export class VehiculosService {
   constructor(
     @InjectRepository(Vehiculo)
     private vehiculoRepo: Repository<Vehiculo>,
+
+    @InjectRepository(Version)
+    private versionRepo: Repository<Version>,
   ) {}
 
-  // Modificado para recibir filtros (Query Params)
-  async findAll(marca?: string) {
-    const query = this.vehiculoRepo.createQueryBuilder('vehiculo')
-      .leftJoinAndSelect('vehiculo.version', 'version')
-      .leftJoinAndSelect('version.modelo', 'modelo')
-      .leftJoinAndSelect('modelo.marca', 'marca')
-      .leftJoinAndSelect('vehiculo.sucursal', 'sucursal');
+  async create(dto: CreateVehiculoDto) {
+    const version = await this.versionRepo.findOne({
+      where: { id: dto.versionId },
+    });
 
-    if (marca) {
-      query.where('marca.nombre ILIKE :marca', { marca: `%${marca}%` });
+    if (!version) {
+      throw new NotFoundException('Versión no encontrada');
     }
 
-    return await query.getMany();
+    const vehiculo = this.vehiculoRepo.create({
+      vin: dto.vin,
+      color: dto.color,
+      precio_final: dto.precio_final,
+      version,
+    });
+
+    return this.vehiculoRepo.save(vehiculo);
+  }
+
+  findAll() {
+    return this.vehiculoRepo.find();
   }
 
   async findOne(id: number) {
-    // CORRECCIÓN: Agregado await aquí
     const vehiculo = await this.vehiculoRepo.findOne({
       where: { id },
-      relations: ['version', 'sucursal'],
     });
 
-    if (!vehiculo) throw new NotFoundException(`Vehículo con ID ${id} no encontrado`);
+    if (!vehiculo) {
+      throw new NotFoundException('Vehículo no encontrado');
+    }
+
     return vehiculo;
   }
 
-  async create(data: CreateVehiculoDto) {
-    try {
-      const nuevo = this.vehiculoRepo.create({
-        ...data,
-        version: { id: data.version_id },
-        sucursal: { id: data.sucursal_id },
-      });
-      return await this.vehiculoRepo.save(nuevo);
-    } catch (error) {
-      // Capturamos error de duplicado (VIN único) para prueba negativa
-      if (error.code === '23505') {
-        throw new BadRequestException('Ya existe un vehículo registrado con ese VIN');
-      }
-      throw error;
-    }
-  }
-
-  async update(id: number, data: UpdateVehiculoDto) {
-    const vehiculo = await this.findOne(id); // Reusa la lógica de findOne con el error 404
-    this.vehiculoRepo.merge(vehiculo, data); // Merge es mejor que Object.assign para TypeORM
-    return await this.vehiculoRepo.save(vehiculo);
-  }
-
-  async delete(id: number) {
+  async update(id: number, dto: UpdateVehiculoDto) {
     const vehiculo = await this.findOne(id);
-    return await this.vehiculoRepo.remove(vehiculo);
+
+    if (dto.versionId) {
+      const version = await this.versionRepo.findOne({
+        where: { id: dto.versionId },
+      });
+
+      if (!version) {
+        throw new NotFoundException('Versión no encontrada');
+      }
+
+      vehiculo.version = version;
+    }
+
+    Object.assign(vehiculo, dto);
+
+    return this.vehiculoRepo.save(vehiculo);
+  }
+
+  async remove(id: number) {
+    const vehiculo = await this.findOne(id);
+    return this.vehiculoRepo.remove(vehiculo);
   }
 }

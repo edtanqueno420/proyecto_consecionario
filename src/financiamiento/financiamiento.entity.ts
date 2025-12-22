@@ -1,22 +1,34 @@
-import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from 'typeorm';
+import { Venta } from '../ventas/venta.entity';
+import { Banco } from '../bancos/banco.entity';
 
-@Entity('bancos_financiamiento')
-export class BancoFinanciamiento {
-  @PrimaryGeneratedColumn()
-  id: number;
 
-  @Column({ length: 90 })
-  nombre_banco: string;
+@Entity('financiamientos')
+export class Financiamiento {
+@PrimaryGeneratedColumn()
+id: number;
 
-  @Column({ type: 'decimal', precision: 5, scale: 2 })
-  tasa_interes_anual: number;
 
-  @Column()
-  plazo_maximo_meses: number;
+@ManyToOne(() => Venta)
+venta: Venta;
 
-  @Column({ type: 'decimal', precision: 5, scale: 2 })
-  entrada_minima_porcentaje: number;
 
-  @Column({ type: 'boolean' })
-  requiere_seguro: boolean;
+@ManyToOne(() => Banco)
+banco: Banco;
+
+
+@Column('decimal')
+monto: number;
+
+
+@Column()
+plazoMeses: number;
+
+
+@Column('decimal')
+cuotaMensual: number;
+
+
+@Column()
+estado: string; // solicitado | aprobado | rechazado
 }

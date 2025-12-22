@@ -1,13 +1,11 @@
 import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm'; // <--- 1. Importar TypeORM
-import { VentasController } from './ventas.controller';
+import { TypeOrmModule } from '@nestjs/typeorm';
 import { VentasService } from './ventas.service';
-import { Venta } from './ventas.entity'; // <--- 2. Importar tu entidad
+import { VentasController } from './ventas.controller';
+import { Venta } from './venta.entity';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([Venta]) // <--- 3. VITAL: Registra la tabla en este módulo
-  ],
+  imports: [TypeOrmModule.forFeature([Venta])],
   controllers: [VentasController],
   providers: [VentasService],
 })
