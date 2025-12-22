@@ -11,6 +11,6 @@ import { Version } from '../versiones/version.entity';
   ],
   controllers: [VehiculosController],
   providers: [VehiculosService],
-  exports: [VehiculosService],
+  exports: [VehiculosService,TypeOrmModule],
 })
 export class VehiculosModule {}

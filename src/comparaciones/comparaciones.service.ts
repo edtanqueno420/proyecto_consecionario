@@ -26,10 +26,21 @@ export class ComparacionesService {
       throw new BadRequestException('Solo se permiten hasta 3 vehículos');
     }
 
-    const comparacion = this.comparacionRepo.create({
-      fecha: new Date(),
-      usuario: { id: userId } as any,
-    });
+    // 1️⃣ Cargar el usuario real desde la base de datos
+const usuario = await this.comparacionRepo.manager.findOne(Usuario, {
+  where: { id: userId },
+});
+
+if (!usuario) {
+  throw new BadRequestException('Usuario no encontrado');
+}
+
+// 2️⃣ Crear la comparación con el usuario real
+const comparacion = this.comparacionRepo.create({
+  fecha: new Date(),
+  usuario,
+});
+
 
     await this.comparacionRepo.save(comparacion);
 

@@ -1,23 +1,17 @@
-import {
-  IsNumber,
-  IsArray,
-  ValidateNested,
-  IsBoolean,
-  IsString,
-} from 'class-validator';
+import { IsArray, ValidateNested, IsString, IsBoolean } from 'class-validator';
 import { Type } from 'class-transformer';
 
 class ImagenDto {
   @IsString()
   url: string;
 
-  @IsBoolean()
+  @IsBoolean()   // ✅ Aquí validamos que sea booleano
   principal: boolean;
 }
 
 export class CreateGaleriaDto {
-  @IsNumber()
-  vehiculoId: number;
+  @IsString() 
+  vehiculo: string;  // _id del vehículo como string
 
   @IsArray()
   @ValidateNested({ each: true })

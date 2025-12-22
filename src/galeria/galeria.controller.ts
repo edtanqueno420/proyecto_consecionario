@@ -2,6 +2,8 @@ import {
   Controller,
   Post,
   Get,
+  Put,
+  Delete,
   Body,
   Param,
   UseGuards,
@@ -17,7 +19,9 @@ import { Rol } from '../auth/roles.enum';
 export class GaleriaController {
   constructor(private readonly galeriaService: GaleriaService) {}
 
+  // -------------------------
   // Crear galería (ADMIN o VENDEDOR)
+  // -------------------------
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Rol.ADMIN, Rol.VENDEDOR)
   @Post()
@@ -25,9 +29,47 @@ export class GaleriaController {
     return this.galeriaService.create(dto);
   }
 
-  // Obtener galería por vehículo (público)
+  // -------------------------
+  // Obtener todas las galerías (público)
+  // -------------------------
+  @Get()
+  findAll() {
+    return this.galeriaService.findAll();
+  }
+
+  // -------------------------
+  // Obtener galería por ID (público)
+  // -------------------------
+  @Get(':id')
+  findOne(@Param('id') id: string) {
+    return this.galeriaService.findOne(id);
+  }
+
+  // -------------------------
+  // Obtener galerías por vehículo (público)
+  // -------------------------
   @Get('vehiculo/:vehiculoId')
-  findByVehiculo(@Param('vehiculoId') vehiculoId: number) {
-    return this.galeriaService.findByVehiculo(+vehiculoId);
+  findByVehiculo(@Param('vehiculoId') vehiculoId: string) {
+    return this.galeriaService.findByVehiculo((+vehiculoId));
+  }
+
+  // -------------------------
+  // Actualizar galería (ADMIN o VENDEDOR)
+  // -------------------------
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Rol.ADMIN, Rol.VENDEDOR)
+  @Put(':id')
+  update(@Param('id') id: string, @Body() dto: CreateGaleriaDto) {
+    return this.galeriaService.update(id, dto);
+  }
+
+  // -------------------------
+  // Eliminar galería (ADMIN o VENDEDOR)
+  // -------------------------
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Rol.ADMIN, Rol.VENDEDOR)
+  @Delete(':id')
+  remove(@Param('id') id: string) {
+    return this.galeriaService.remove(id);
   }
 }
