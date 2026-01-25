@@ -1,44 +1,45 @@
-name: 🚀 Deploy NestJS Backend to VPS
+name: 🚀 Deploy NestJS Blog Backend API to VPS
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+    - name: Checkout code
+      uses: actions/checkout@v3
 
-      - name: Copy project to VPS
-        uses: appleboy/scp-action@v0.1.3
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: root
-          key: ${{ secrets.VPS_KEY }}
-          source: "."
-          target: "/opt/proyecto_consecionario"
+    - name: Copy project to VPS
+      uses: appleboy/scp-action@v0.1.3
+      with:
+        host: ${{ secrets.VPS_HOST }}
+        username: root
+        key: ${{ secrets.VPS_KEY }}
+        source: "."
+        target: "/opt/proyecto_consecionario"
 
-      - name: Deploy on VPS
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: root
-          key: ${{ secrets.VPS_KEY }}
-          command_timeout: 30m   # ⬅️ CLAVE
-          script: |
-            set -e
-            cd /opt/proyecto_consecionario
+    - name: Run deploy commands on VPS
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+        host: ${{ secrets.VPS_HOST }}
+        username: root
+        key: ${{ secrets.VPS_KEY }}
+        command_timeout: 30m
+        script: |
+          set -e
+          cd /opt/proyecto_consecionario
 
-            echo "${{ secrets.ENV_FILE }}" > .env
+          sudo lsof -t -i:3000 | xargs -r sudo kill -9 || true
 
-            npm install
-            npm run build
+          printf "%s" "${{ secrets.ENV_FILE }}" > .env
 
-            pm2 reload proyecto_consecionario || \
-            pm2 start dist/main.js --name proyecto_consecionario
+          npm install
+          npm run build
 
-            pm2 save
+          pm2 stop proyecto_consecionario || true
+          pm2 delete proyecto_consecionario || true
+          pm2 start dist/main.js --name proyecto_consecionario
+          pm2 save
