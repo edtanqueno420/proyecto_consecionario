@@ -22,22 +22,23 @@ jobs:
           source: "."
           target: "/opt/proyecto_consecionario"
 
-      - name: Run deploy commands on VPS
+      - name: Deploy on VPS
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.VPS_HOST }}
           username: root
           key: ${{ secrets.VPS_KEY }}
+          command_timeout: 30m   # ⬅️ CLAVE
           script: |
             set -e
             cd /opt/proyecto_consecionario
 
-            printf "%s" "${{ secrets.ENV_FILE }}" > .env
+            echo "${{ secrets.ENV_FILE }}" > .env
 
             npm install
             npm run build
 
-            pm2 stop proyecto_consecionario || true
-            pm2 delete proyecto_consecionario || true
+            pm2 reload proyecto_consecionario || \
             pm2 start dist/main.js --name proyecto_consecionario
+
             pm2 save
