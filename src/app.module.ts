@@ -69,7 +69,7 @@ import { BancosModule } from './bancos/bancos.module';
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
-        uri: config.get('MONGO_URI'),
+        uri: config.get('MONGODB_URI'),
       }),
     }),
 
