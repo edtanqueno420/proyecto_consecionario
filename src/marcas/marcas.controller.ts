@@ -16,22 +16,22 @@ export class MarcasController {
     return this.marcasService.findAll();
   }
 
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Rol.ADMIN)
+  //@UseGuards(JwtAuthGuard, RolesGuard)
+  //@Roles(Rol.ADMIN)
   @Post()
   create(@Body() dto: CreateMarcaDto) {
     return this.marcasService.create(dto);
   }
 
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Rol.ADMIN)
+  //@UseGuards(JwtAuthGuard, RolesGuard)
+  //@Roles(Rol.ADMIN)
   @Put(':id')
   update(@Param('id') id: number, @Body() dto: UpdateMarcaDto) {
     return this.marcasService.update(+id, dto);
   }
 
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Rol.ADMIN)
+  //@UseGuards(JwtAuthGuard, RolesGuard)
+  //@Roles(Rol.ADMIN)
   @Delete(':id')
   remove(@Param('id') id: number) {
     return this.marcasService.remove(+id);

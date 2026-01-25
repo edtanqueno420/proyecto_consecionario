@@ -16,22 +16,22 @@ export class VersionesController {
     return this.versionesService.findAll();
   }
 
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Rol.ADMIN)
+  //@UseGuards(JwtAuthGuard, RolesGuard)
+  //@Roles(Rol.ADMIN)
   @Post()
   create(@Body() dto: CreateVersionDto) {
     return this.versionesService.create(dto);
   }
 
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Rol.ADMIN)
+  //@UseGuards(JwtAuthGuard, RolesGuard)
+  //@Roles(Rol.ADMIN)
   @Put(':id')
   update(@Param('id') id: number, @Body() dto: UpdateVersionDto) {
     return this.versionesService.update(+id, dto);
   }
 
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Rol.ADMIN)
+  //@UseGuards(JwtAuthGuard, RolesGuard)
+  //@Roles(Rol.ADMIN)
   @Delete(':id')
   remove(@Param('id') id: number) {
     return this.versionesService.remove(+id);

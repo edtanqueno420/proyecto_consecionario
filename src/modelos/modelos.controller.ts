@@ -16,22 +16,22 @@ export class ModelosController {
     return this.modelosService.findAll();
   }
 
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Rol.ADMIN)
+  //@UseGuards(JwtAuthGuard, RolesGuard)
+  //@Roles(Rol.ADMIN)
   @Post()
   create(@Body() dto: CreateModeloDto) {
     return this.modelosService.create(dto);
   }
 
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Rol.ADMIN)
+  //@UseGuards(JwtAuthGuard, RolesGuard)
+  //@Roles(Rol.ADMIN)
   @Put(':id')
   update(@Param('id') id: number, @Body() dto: UpdateModeloDto) {
     return this.modelosService.update(+id, dto);
   }
 
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Rol.ADMIN)
+  //@UseGuards(JwtAuthGuard, RolesGuard)
+  //@Roles(Rol.ADMIN)
   @Delete(':id')
   remove(@Param('id') id: number) {
     return this.modelosService.remove(+id);
