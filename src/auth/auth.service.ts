@@ -40,16 +40,23 @@ export class AuthService {
 
   // 🔑 GENERAR JWT
   async login(usuario: Usuario) {
-    const payload = {
-      sub: usuario.id,
-      email: usuario.email,
-      rol: usuario.rol,
-    };
+  const payload = {
+    sub: usuario.id,
+    email: usuario.email,
+    rol: usuario.rol,
+  };
 
-    return {
-      access_token: this.jwtService.sign(payload),
-    };
-  }
+  return {
+    access_token: this.jwtService.sign(payload),
+    user: {
+      id: usuario.id,
+      email: usuario.email,
+      nombre: usuario.nombre,
+      apellido: usuario.apellido,
+      rol: usuario.rol,
+    },
+  };
+}
 
   // 📝 REGISTRO (SIGNUP)
   async register(dto: RegisterDto) {
