@@ -8,7 +8,7 @@ async function bootstrap() {
     origin: [
       'http://localhost:5173', // Front local (Vite)
       'http://127.0.0.1:5173',
-      'https://yec-concesionaria-api.desarrollo-software.xyz', // dominio backend (por seguridad)
+      'https://yec-concesionario.desarrollo-software.xyz', // dominio backend (por seguridad)
     ],
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     allowedHeaders: 'Content-Type, Authorization',
