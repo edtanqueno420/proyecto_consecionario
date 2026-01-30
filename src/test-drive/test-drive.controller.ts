@@ -1,8 +1,7 @@
-import {Controller,Post,Body,Req,UseGuards,Get,Put,Param,} from '@nestjs/common';
+import { Body, Controller, Post, UseGuards } from '@nestjs/common';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { TestDriveService } from './test-drive.service';
 import { CreateTestDriveDto } from './dto/create-test-drive.dto';
-import { UpdateTestDriveDto } from './dto/update-test-drive.dto';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
 @Controller('test-drive')
 export class TestDriveController {
@@ -10,20 +9,7 @@ export class TestDriveController {
 
   @UseGuards(JwtAuthGuard)
   @Post()
-    create(@Body() dto: CreateTestDriveDto) {
+  create(@Body() dto: CreateTestDriveDto) {
     return this.testDriveService.create(dto);
-  }
-
-
-  @UseGuards(JwtAuthGuard)
-  @Get()
-  findAll() {
-    return this.testDriveService.findAll();
-  }
-
-  @UseGuards(JwtAuthGuard)
-  @Put(':id')
-  update(@Param('id') id: number, @Body() dto: UpdateTestDriveDto) {
-    return this.testDriveService.update(+id, dto);
   }
 }
