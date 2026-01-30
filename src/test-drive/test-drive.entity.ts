@@ -13,24 +13,31 @@ export enum EstadoTestDrive {
   CANCELADO = 'CANCELADO',
 }
 
-@Entity('test_drive')
+@Entity()
 export class TestDrive {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToOne(() => Usuario, { eager: true })
-  usuario: Usuario;
+  @Column()
+  nombre: string;
 
-  @ManyToOne(() => Vehiculo, { eager: true })
-  vehiculo: Vehiculo;
+  @Column()
+  email: string;
 
-  @Column({ type: 'date' })
+  @Column()
+  telefono: string;
+
+  @Column()
   fecha: string;
 
-  @Column({
-    type: 'enum',
-    enum: EstadoTestDrive,
-    default: EstadoTestDrive.PENDIENTE,
-  })
-  estado: EstadoTestDrive;
+  @Column()
+  hora: string;
+
+  @Column({ default: 'pendiente' })
+  estado: string;
+
+  @ManyToOne(() => Vehiculo)
+  vehiculo: Vehiculo;
 }
+
+

@@ -1,9 +1,25 @@
-import { Schema } from 'mongoose';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Document } from 'mongoose';
 
-export const GaleriaMultimediaSchema = new Schema({
-  vehiculo_id: { type: Number, required: true }, // Sí guardamos el ID del vehículo
-  url_archivo: { type: String, required: true },
-  tipo_archivo: { type: String, enum: ['imagen', 'video'], required: true },
-  orden: { type: Number, default: 1 },
-  metadata: { type: Object }, // flexible
-}, { timestamps: true });
+export type GaleriaDocument = Galeria & Document;
+
+@Schema({ _id: false })
+export class Imagen {
+  @Prop({ required: true })
+  url: string;
+
+  @Prop({ default: false })
+  principal: boolean;
+}
+
+@Schema({ timestamps: true })
+export class Galeria {
+  @Prop({ required: true })
+  vehiculoId: string; // ✅ campo correcto
+
+  @Prop({ type: [Imagen], default: [] })
+  imagenes: Imagen[];
+}
+
+export const GaleriaSchema = SchemaFactory.createForClass(Galeria);
+GaleriaSchema.index({ vehiculoId: 1 });

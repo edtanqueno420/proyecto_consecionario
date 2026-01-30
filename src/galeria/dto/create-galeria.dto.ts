@@ -1,19 +1,32 @@
-import { IsArray, ValidateNested, IsString, IsBoolean } from 'class-validator';
-import { Type } from 'class-transformer';
+import {
+  IsArray,
+  ArrayMinSize,
+  ValidateNested,
+  IsString,
+  IsNotEmpty,
+  IsBoolean,
+  IsUrl,
+} from 'class-validator';
+import { Type, Transform } from 'class-transformer';
 
-class ImagenDto {
+export class ImagenDto {
   @IsString()
+  @IsNotEmpty()
+  @IsUrl({}, { message: 'url debe ser una URL válida' })
   url: string;
 
-  @IsBoolean()   // ✅ Aquí validamos que sea booleano
+  @Transform(({ value }) => value === true || value === 'true')
+  @IsBoolean()
   principal: boolean;
 }
 
 export class CreateGaleriaDto {
-  @IsString() 
-  vehiculo: string;  // _id del vehículo como string
+  @IsString()
+  @IsNotEmpty()
+  vehiculoId: string; // ID del vehículo en Postgres (en tu caso, number pero lo guardamos como string)
 
   @IsArray()
+  @ArrayMinSize(1, { message: 'imagenes debe tener al menos 1 elemento' })
   @ValidateNested({ each: true })
   @Type(() => ImagenDto)
   imagenes: ImagenDto[];

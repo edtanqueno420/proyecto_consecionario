@@ -1,7 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { Types } from 'mongoose';
 import { Galeria, GaleriaDocument } from './schemas/galeria.schema';
 import { CreateGaleriaDto } from './dto/create-galeria.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -18,83 +17,113 @@ export class GaleriaService {
     private readonly vehiculoRepo: Repository<Vehiculo>,
   ) {}
 
+  // ✅ Validar vehículo real en Postgres (id es number en tu proyecto)
+  private async validarVehiculo(vehiculoId: string) {
+    const idNum = Number(vehiculoId);
+    if (isNaN(idNum)) throw new NotFoundException('Vehículo inválido');
+
+    const vehiculo = await this.vehiculoRepo.findOne({ where: { id: idNum } });
+    if (!vehiculo) throw new NotFoundException('Vehículo no encontrado');
+
+    return vehiculo;
+  }
+
   // -------------------------
   // Crear galería
   // -------------------------
   async create(dto: CreateGaleriaDto) {
-    const vehiculoId = Number(dto.vehiculo);
-    if (isNaN(vehiculoId)) throw new NotFoundException('Vehículo inválido');
+    await this.validarVehiculo(dto.vehiculoId);
 
-    const vehiculoExists = await this.vehiculoRepo.findOne({ where: { id: vehiculoId } });
-    if (!vehiculoExists) throw new NotFoundException('Vehículo no encontrado');
+    // ✅ Solo una imagen puede ser principal
+    const imagenes = dto.imagenes.map((img) => ({
+      url: img.url,
+      principal: !!img.principal,
+    }));
+
+    const idxPrincipal = imagenes.findIndex((i) => i.principal);
+    if (idxPrincipal !== -1) {
+      imagenes.forEach((i, idx) => (i.principal = idx === idxPrincipal));
+    }
 
     const galeria = new this.galeriaModel({
-      ...dto,
-      vehiculo: vehiculoId.toString(), // Guardamos como string en Mongo
+      vehiculoId: dto.vehiculoId,
+      imagenes,
     });
 
     return galeria.save();
   }
 
   // -------------------------
-  // Obtener todas las galerías
+  // Obtener todas las galerías (con vehiculoData)
   // -------------------------
   async findAll() {
-    const galerias = await this.galeriaModel.find().exec();
+    const galerias = await this.galeriaModel.find().lean().exec();
 
-    for (const galeria of galerias) {
-      const vehiculoId = Number(galeria.vehiculo);
-      galeria['vehiculoData'] = isNaN(vehiculoId)
-        ? null
-        : await this.vehiculoRepo.findOne({ where: { id: vehiculoId } });
-    }
+    const result = await Promise.all(
+      galerias.map(async (g: any) => {
+        const idNum = Number(g.vehiculoId);
+        const vehiculoData = isNaN(idNum)
+          ? null
+          : await this.vehiculoRepo.findOne({ where: { id: idNum } });
 
-    return galerias;
+        return { ...g, vehiculoData };
+      }),
+    );
+
+    return result;
   }
 
   // -------------------------
   // Obtener galería por ID
   // -------------------------
   async findOne(id: string) {
-    const galeria = await this.galeriaModel.findById(id).exec();
+    const galeria: any = await this.galeriaModel.findById(id).lean().exec();
     if (!galeria) throw new NotFoundException('Galería no encontrada');
 
-    const vehiculoId = Number(galeria.vehiculo);
-    if (isNaN(vehiculoId)) throw new NotFoundException('Vehículo asociado inválido');
+    const idNum = Number(galeria.vehiculoId);
+    const vehiculoData = isNaN(idNum)
+      ? null
+      : await this.vehiculoRepo.findOne({ where: { id: idNum } });
 
-    const vehiculo = await this.vehiculoRepo.findOne({ where: { id: vehiculoId } });
-
-    return { ...galeria.toObject(), vehiculoData: vehiculo };
+    return { ...galeria, vehiculoData };
   }
 
   // -------------------------
   // Obtener galerías por vehículo
   // -------------------------
-  async findByVehiculo(vehiculoId: number) {
-    const galerias = await this.galeriaModel
-      .find({ vehiculo: vehiculoId.toString() })
-      .exec();
+  async findByVehiculo(vehiculoId: string) {
+    const vehiculoData = await this.validarVehiculo(vehiculoId);
 
-    if (!galerias || galerias.length === 0) {
+    const galerias = await this.galeriaModel.find({ vehiculoId }).lean().exec();
+
+    if (!galerias.length) {
       throw new NotFoundException('No se encontraron galerías para este vehículo');
     }
 
-    const vehiculo = await this.vehiculoRepo.findOne({ where: { id: vehiculoId } });
-
-    return galerias.map((g) => ({ ...g.toObject(), vehiculoData: vehiculo }));
+    return galerias.map((g: any) => ({ ...g, vehiculoData }));
   }
 
   // -------------------------
   // Agregar imagen a galería existente
   // -------------------------
-  async addImagen(
-    vehiculoId: number,
-    imagen: { url: string; principal: boolean },
-  ) {
-    const galeria = await this.galeriaModel.findOne({ vehiculo: vehiculoId.toString() });
+  async addImagen(vehiculoId: string, imagen: { url: string; principal: boolean }) {
+    await this.validarVehiculo(vehiculoId);
+
+    const galeria = await this.galeriaModel.findOne({ vehiculoId }).exec();
     if (!galeria) throw new NotFoundException('Galería no encontrada');
 
-    galeria.imagenes.push(imagen);
+    if (imagen.principal) {
+      galeria.imagenes = galeria.imagenes.map((img: any) => ({
+        ...img,
+        principal: false,
+      })) as any;
+    }
+
+    galeria.imagenes.push({
+      url: imagen.url,
+      principal: !!imagen.principal,
+    } as any);
+
     return galeria.save();
   }
 
@@ -102,15 +131,31 @@ export class GaleriaService {
   // Actualizar galería
   // -------------------------
   async update(id: string, dto: CreateGaleriaDto) {
-    const galeria = await this.galeriaModel.findByIdAndUpdate(id, { ...dto }, { new: true }).exec();
+    await this.validarVehiculo(dto.vehiculoId);
+
+    const imagenes = dto.imagenes.map((img) => ({
+      url: img.url,
+      principal: !!img.principal,
+    }));
+
+    const idxPrincipal = imagenes.findIndex((i) => i.principal);
+    if (idxPrincipal !== -1) {
+      imagenes.forEach((i, idx) => (i.principal = idx === idxPrincipal));
+    }
+
+    const galeria: any = await this.galeriaModel
+      .findByIdAndUpdate(id, { vehiculoId: dto.vehiculoId, imagenes }, { new: true })
+      .lean()
+      .exec();
+
     if (!galeria) throw new NotFoundException('Galería no encontrada');
 
-    const vehiculoId = Number(galeria.vehiculo);
-    galeria['vehiculoData'] = isNaN(vehiculoId)
+    const idNum = Number(galeria.vehiculoId);
+    const vehiculoData = isNaN(idNum)
       ? null
-      : await this.vehiculoRepo.findOne({ where: { id: vehiculoId } });
+      : await this.vehiculoRepo.findOne({ where: { id: idNum } });
 
-    return galeria;
+    return { ...galeria, vehiculoData };
   }
 
   // -------------------------

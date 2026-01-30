@@ -1,7 +1,4 @@
-import {
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Vehiculo } from './vehiculo.entity';
@@ -24,9 +21,7 @@ export class VehiculosService {
       where: { id: dto.versionId },
     });
 
-    if (!version) {
-      throw new NotFoundException('Versión no encontrada');
-    }
+    if (!version) throw new NotFoundException('Versión no encontrada');
 
     const vehiculo = this.vehiculoRepo.create({
       vin: dto.vin,
@@ -43,14 +38,8 @@ export class VehiculosService {
   }
 
   async findOne(id: number) {
-    const vehiculo = await this.vehiculoRepo.findOne({
-      where: { id },
-    });
-
-    if (!vehiculo) {
-      throw new NotFoundException('Vehículo no encontrado');
-    }
-
+    const vehiculo = await this.vehiculoRepo.findOne({ where: { id } });
+    if (!vehiculo) throw new NotFoundException('Vehículo no encontrado');
     return vehiculo;
   }
 
@@ -62,15 +51,11 @@ export class VehiculosService {
         where: { id: dto.versionId },
       });
 
-      if (!version) {
-        throw new NotFoundException('Versión no encontrada');
-      }
-
+      if (!version) throw new NotFoundException('Versión no encontrada');
       vehiculo.version = version;
     }
 
     Object.assign(vehiculo, dto);
-
     return this.vehiculoRepo.save(vehiculo);
   }
 

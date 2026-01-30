@@ -10,9 +10,10 @@ export class TestDriveController {
 
   @UseGuards(JwtAuthGuard)
   @Post()
-  create(@Body() dto: CreateTestDriveDto, @Req() req) {
-    return this.testDriveService.create(dto, req.user.id);
+    create(@Body() dto: CreateTestDriveDto) {
+    return this.testDriveService.create(dto);
   }
+
 
   @UseGuards(JwtAuthGuard)
   @Get()
